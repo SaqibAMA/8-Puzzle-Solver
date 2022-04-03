@@ -28,7 +28,6 @@ class Node:
         print("| " + str(self.state[2][0]) + " | " + str(self.state[2][1]) + " | " + str(self.state[2][2]) + " |")
         print(" -----------")
 
-
 class PuzzleSolver:
     def __init__(self, initial_state, final_state):
         self.initial_state = initial_state
@@ -50,10 +49,7 @@ class PuzzleSolver:
             for i in range(len(data)):
                 for j in range(len(data[0])):
                     if data[i][j] != 0:
-                        # print("Checking for element: {}".format(data[i][j]))
                         x, y = get_element_location(data[i][j], self.final_state)
-                        # print("Element {} is at location: {} in final state.".format(data[i][j], (x, y)))
-                        # print("Manhattan Displacement: {}".format(abs(i - y) + abs(j - x)))
                         total_manhattan_displacements += abs(i - y) + abs(j - x)
             return total_manhattan_displacements
 
