@@ -67,7 +67,7 @@ class PuzzleSolver:
             inversions = 0
             for i in range(len(data)):
                 for j in range(len(data[0]) - 1):
-                    _data = copy.deepcopy(data)
+                    _data = copy.copy(data)
                     if _data[i][j] != 0 and _data[i][j + 1] != 0:
 
                         previous_manhattan_displacements = get_misplaced_tiles(_data)
@@ -101,7 +101,7 @@ class PuzzleSolver:
             f_cords = [fc for fc in f_cords if fc[0] in range(len(node.state[0])) and fc[1] in range(len(node.state))]
 
             frontier_nodes = []
-            new_parents = copy.deepcopy(node.parents)
+            new_parents = copy.copy(node.parents)
             new_parents.append(node)
 
             for f in f_cords:
@@ -114,23 +114,32 @@ class PuzzleSolver:
             
             return frontier_nodes
 
-        open_list = deque()
-        close_list = []
+        open_list = deque()         # to be explored
+        close_list = []             # explored
 
         open_list.append(Node(state=self.initial_state, g=0, h=self.heuristic(self.initial_state), parents=[]))
 
+        # a star
         while len(open_list):
+            # getting minimum node
             min_node = min(open_list, key=lambda x: x.get_cost())
 
+            # tie breaking
+            if len(close_list) > 0:
+                valid_nodes = [n for n in open_list if n.get_cost() == min_node.get_cost() and n.g == close_list[-1].g + 1]
+                min_node = valid_nodes[0] if len(valid_nodes) > 0 else min_node
+
+            # if this is the node, then monotonicity says this is the best solution
             if min_node.state == self.final_state:
 
                 print("Total nodes explored: {}".format(len(close_list)))
                 print("Total nodes generated: {}".format(len(open_list) + len(close_list)))
 
-                path = copy.deepcopy(min_node.parents)
+                path = min_node.parents
                 path.append(min_node)
                 return path
 
+            # where can we go from this node onwards?
             frontier_nodes = generate_frontier_nodes(min_node)
             for f in frontier_nodes:
                 if f not in open_list and f not in close_list:
@@ -138,11 +147,25 @@ class PuzzleSolver:
             
             open_list.remove(min_node)
             close_list.append(min_node)
+            # print("Iteration: ", len(close_list))
 
 
+# to get input puzzle from user
+def get_initial_state():
+    print(":: INPUT ROWS ::")
+    print(":: Separate each element by space. ::")
+    
+    initial_state = []
+    for i in range(3):
+        row = input("${}> ".format(i + 1))
+        elements = row.split(' ')
+        elements = [int(e) for e in elements]
+        initial_state.append(elements)
+    return initial_state
 
 def main():
-    initial_state = [[1, 7, 3], [2, 4, 5], [8, 6, 0]]
+    # initial_state = get_initial_state()
+    initial_state = [[1, 7, 5], [3, 2, 4], [6, 8, 0]]
     final_state = [[1, 2, 3], [8, 0, 4], [7, 6, 5]]
     
     solver = PuzzleSolver(initial_state, final_state)
@@ -155,8 +178,8 @@ def main():
     print("Total moves needed: {}".format(len(solution)))
 
     for node in solution:
-        node.print_game_board()
-        input()
+        node.print_game_board()     # prints everything in a nice form
+        input()                     # to see the solution step by step
 
 if __name__ == "__main__":
     main()
